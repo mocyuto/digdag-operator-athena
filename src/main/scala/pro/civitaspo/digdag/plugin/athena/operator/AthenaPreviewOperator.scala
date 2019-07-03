@@ -36,6 +36,7 @@ class AthenaPreviewOperator(operatorName: String, context: OperatorContext, syst
   protected object LastPreview {
 
     def apply(id: String, r: GetQueryResultsResult): LastPreview = {
+      val rows = r.getResultSet.getRows.asScala.map(_.getData.asScala.map(_.getVarCharValue))
       new LastPreview(
         id = id,
         columns = r.getResultSet.getResultSetMetadata.getColumnInfo.asScala.map { ci =>
@@ -52,7 +53,7 @@ class AthenaPreviewOperator(operatorName: String, context: OperatorContext, syst
             `type` = ci.getType
           )
         },
-        rows = r.getResultSet.getRows.asScala.map(_.getData.asScala.map(_.getVarCharValue)).tail // the first row is column names
+        rows = if (rows.isEmpty) Seq.empty else rows.tail // the first row is column names
       )
     }
   }
